@@ -1,0 +1,71 @@
+import os
+import shutil
+import re
+import requests
+
+def move_jpg_files():
+    source = input("Enter the source folder path: ")
+    destination = input("Enter the destination folder path: ")
+
+    if not os.path.exists(destination):
+        os.makedirs(destination)
+
+    moved = 0
+    for file in os.listdir(source):
+        if file.lower().endswith('.jpg'):
+            shutil.move(os.path.join(source, file), os.path.join(destination, file))
+            moved += 1
+
+    print(f"Moved {moved} .jpg file(s) to '{destination}'.")
+
+def extract_emails():
+    input_file = input("Enter the path of the text file: ")
+    output_file = input("Enter the output file name (e.g., emails.txt): ")
+
+    with open(input_file, 'r') as f:
+        content = f.read()
+
+    emails = re.findall(r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}', content)
+
+    with open(output_file, 'w') as f:
+        for email in emails:
+            f.write(email + '\n')
+
+    print(f"Extracted {len(emails)} email(s) to '{output_file}'.")
+
+def scrape_webpage_title():
+    url = input("Enter the full URL (e.g., https://example.com): ")
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+        title_match = re.search(r'<title>(.*?)</title>', response.text, re.IGNORECASE)
+        if title_match:
+            title = title_match.group(1)
+            with open('web_title.txt', 'w') as f:
+                f.write(title)
+            print(f"Webpage title saved: '{title}'")
+        else:
+            print("No title found in the page.")
+    except requests.RequestException as e:
+        print(f"Error fetching the page: {e}")
+
+# ---- Menu to choose task ----
+def main():
+    print("\nChoose a task to automate:")
+    print("1. Move all .jpg files from one folder to another")
+    print("2. Extract email addresses from a text file")
+    print("3. Scrape and save the title of a webpage")
+
+    choice = input("Enter your choice (1/2/3): ")
+
+    if choice == '1':
+        move_jpg_files()
+    elif choice == '2':
+        extract_emails()
+    elif choice == '3':
+        scrape_webpage_title()
+    else:
+        print("Invalid choice. Please enter 1, 2, or 3.")
+
+if __name__ == "__main__":
+    main()
